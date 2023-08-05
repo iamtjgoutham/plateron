@@ -1,5 +1,10 @@
 # Getting Started with Create React App
 
+# Initial Demo
+
+https://github.com/iamtjgoutham/plateron/assets/115163595/d79b6ccc-ab7a-4091-bf54-db318628df4c
+
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
