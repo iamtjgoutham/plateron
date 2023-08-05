@@ -1,0 +1,31 @@
+.restaurant {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+h1 {
+  line-height: 0.5px;
+}
+
+h3 {
+  line-height: 0.5px;
+}
+
+.margin {
+    margin: 10px;
+}
+
+table {
+  border-collapse: collapse;
+  text-align: center;
+  margin: 10px;
+}
+
+thead, th {
+  border: 0.5px solid;
+}
+
+td {
+  border: 0.5px solid;
+}

@@ -1,0 +1,1 @@
+export const getItmes = (items, categoryId) => items.filter(item => item.CategoryID === categoryId);
