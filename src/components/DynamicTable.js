@@ -24,6 +24,7 @@ const DynamicTable = ({ items, category, itemsData }) => {
         const sortedHeaders = headers.sort(sortByDisplayOrder);
         return (
             <tr>
+                <th>{}</th>
                 {sortedHeaders.map((header, index) => 
                     <React.Fragment key={index}>
                         <th colSpan={Object.keys(header).length}>{header.Name}</th>
@@ -38,22 +39,52 @@ const DynamicTable = ({ items, category, itemsData }) => {
         return dropdownOptions;
     }, [itemsData]);
 
+    const handleDeleteRow = useCallback((id) => {
+        const rowsAfterDelete = rows.filter(row => row.RowWiseDisplayOrder !==id);
+        setRows(rowsAfterDelete);
+    }, [rows])
+
+    const handleChange = useCallback((e, rowValues) => {
+        const { id, value, selectedIndex } = e.target;
+        let values;
+        const { DropDownID, RowWiseDisplayOrder, ColumnWiseDisplayOrder } = rowValues;
+        if(e.target.nodeName === 'SELECT') {
+            const selectedDropDownOptions = getDropdownOptions(DropDownID);
+            const selectedValue = selectedDropDownOptions.filter((_, index) => index === selectedIndex)[0].DropDownValueID;
+            values = selectedValue;
+        } else {
+            values = value;
+        }
+        const updatedRows = rows.map(row => {
+            if (row.ColumnWiseDisplayOrder === ColumnWiseDisplayOrder &&
+            row.RowWiseDisplayOrder === RowWiseDisplayOrder) {
+                row[id] = values;
+            }
+            return row;
+        });
+        setRows(updatedRows);
+    }, [rows, getDropdownOptions]); 
+
     const renderSubRows = useCallback(() => {
-        const sortedRows = rows.sort((a,b) => a.RowWiseDisplayOrder - b.RowWiseDisplayOrder);
+        const sortedRows = rows?.sort((a,b) => a.RowWiseDisplayOrder - b.RowWiseDisplayOrder);
         const uniqueRowOrders = [...new Set(sortedRows.map(item => item.RowWiseDisplayOrder))];
         const uniqueRowData = [...new Set(uniqueRowOrders.map(order => sortedRows.filter(row => row.RowWiseDisplayOrder === order)))];
         return uniqueRowData
-              .map((item) => <tr>
+              .map((item, index) => <tr><td>
+                        {index !==0 &&
+                            <button id={item[index].RowWiseDisplayOrder} onClick={e => handleDeleteRow(item[index].RowWiseDisplayOrder)}>Delete</button>
+                         } </td>
                         {item.map(data => {
-                        const { InputID, DropDownID, RowWiseDisplayOrder } = data;
+                        const { InputID, DropDownID, ColumnWiseDisplayOrder, RowWiseDisplayOrder } = data;
+                        const compId = category.CategoryID.toString() + '-' + ColumnWiseDisplayOrder + '-' + RowWiseDisplayOrder;
                         const Component = INPUT_TYPE[InputID];
                         const dropdownOptions = getDropdownOptions(DropDownID);
                         return <td id={RowWiseDisplayOrder} colSpan={Object.keys(data).length}>
-                                <Component value={data.value} options={dropdownOptions} onChange={() => {}} />
+                                <Component id={compId} value={data[compId] || ''} options={dropdownOptions} onChange={(e) => handleChange(e, data)} />
                             </td>})}
                 </tr>
               )
-    },[rows, getDropdownOptions]);
+    },[rows, getDropdownOptions, handleDeleteRow, category, handleChange]);
 
     const addNewRow = () => {
         const maxRowIndex = rows.reduce((max, item) => {
@@ -62,7 +93,10 @@ const DynamicTable = ({ items, category, itemsData }) => {
           }, 0);
         const lastRow = rows.filter(row => row.RowWiseDisplayOrder === maxRowIndex);
         const newRows = lastRow.map(row => {
-            return ({ ...row, RowWiseDisplayOrder: maxRowIndex + 1})
+            const lastRowCompId =category.CategoryID.toString() + '-' + row.ColumnWiseDisplayOrder + '-' + maxRowIndex;
+            const compId =  category.CategoryID.toString() + '-' + row.ColumnWiseDisplayOrder + '-' + (maxRowIndex + 1);
+            const compValue = row[lastRowCompId];
+            return ({ ...row, RowWiseDisplayOrder: maxRowIndex + 1, [compId]: compValue})
         });
         setRows(prevRows => [...prevRows, ...newRows]);
     };
